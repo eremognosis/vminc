@@ -1,5 +1,8 @@
 #ifndef PARSER_H
 #define PARSER_H
+
+#include "common.h"
+
 /*
  * Parses one VM source line in place.
  *

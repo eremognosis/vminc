@@ -91,7 +91,7 @@ static void copy_word(char *dest, const char *start, size_t length) {
     dest[length] = '\0';
 }
 
-static int parse_address(const char *word) {
+static int parse_integer(const char *word) {
     char *end;
     long value;
 
@@ -99,15 +99,11 @@ static int parse_address(const char *word) {
     value = strtol(word, &end, 10);
 
     if (*word == '\0' || *end != '\0') {
-        parse_error("ERR_PRS_4", "integer for addrwess/number", word);
+        parse_error("ERR_PRS_4", "integer third word", word);
     }
 
     if (errno == ERANGE || value > INT_MAX || value < INT_MIN) {
         parse_error("ERR_PRS_5", "integer inside int range", word);
-    }
-
-    if (value < 0) {
-        parse_error("ERR_PRS_6", "non-negative constant/address", word);
     }
 
     return (int)value;
@@ -172,7 +168,7 @@ void parse(char *line, char *cmd, char *arg1, int *arg2) {
         char original = word_starts[2][word_lengths[2]];
 
         word_starts[2][word_lengths[2]] = '\0';
-        *arg2 = parse_address(word_starts[2]);
+        *arg2 = parse_integer(word_starts[2]);
         word_starts[2][word_lengths[2]] = original;
     }
 }

@@ -1,1 +1,6 @@
 /test_parser
+/vmtrans
+/src/*.o
+/vmtrans
+/test_parser
+/jackos.asm

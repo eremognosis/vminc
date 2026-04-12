@@ -1,4 +1,18 @@
-#define _XOPEN_SOURCE 700
+//
+/*
+ CREATED BY : Raj, April 12
+ Last Updated : April 13 (2:49)
+
+ Specs (for future me):
+ - made for command "file/folder" target
+ - patg length of 4096 chars
+ - it parses the whole cli thing
+ */
+
+
+
+
+#define _XOPEN_SOURCE 700  ///
 
 #include "code_writer.h"
 #include "parser.h"
@@ -26,10 +40,12 @@ typedef struct {
 } PathList;
 
 static void vm_error(const char *code, const char *expected, const char *got) {
+    // gotta write a finctuion for erro as well
     fprintf(stderr, "%s: Expected %s got %s\n", code, expected, got);
 }
 
 static void vm_errorf(const char *code, const char *expected, const char *format, ...) {
+
     char got[PATH_MAX + VM_LINE_MAX];
     va_list args;
     int written;
@@ -39,7 +55,7 @@ static void vm_errorf(const char *code, const char *expected, const char *format
     va_end(args);
 
     if (written < 0 || written >= (int)sizeof(got)) {
-        vm_error(code, expected, "unprintable error detail");
+        vm_error(code, expected, "unprintable error detail"); ///// shits so dangerous even error gave up
         return;
     }
 
@@ -47,7 +63,7 @@ static void vm_errorf(const char *code, const char *expected, const char *format
 }
 
 static void usage(const char *program) {
-    fprintf(stderr, "Usage: %s <file.vm|folder> [output.asm]\n", program);
+    fprintf(stderr, "Usage: %s <file.vm|folder> [/path/to/output.asm]\n", program);
 }
 
 static int has_suffix(const char *text, const char *suffix) {
@@ -65,6 +81,8 @@ static int has_suffix(const char *text, const char *suffix) {
 }
 
 static const char *path_basename(const char *path) {
+
+    /////// used "/" so if some windows psycho use backslash, god can save him, terminal is god
     const char *end;
     const char *base;
 
@@ -95,7 +113,7 @@ static int path_dirname(const char *path, char *out, size_t out_size) {
 
     slash = strrchr(path, '/');
     if (slash == NULL) {
-        return snprintf(out, out_size, ".") < (int)out_size ? 0 : -1;
+        return snprintf(out, out_size, ".") < (int)out_size ? 0 : -1; /// last tuime i wrote "." was not accounted for and the output were "..asm"
     }
 
     if (slash == path) {
@@ -113,6 +131,7 @@ static int path_dirname(const char *path, char *out, size_t out_size) {
 }
 
 static int copy_trimmed_basename(const char *path, char *out, size_t out_size) {
+    //// ye python nahi hai janabv
     const char *base;
     const char *end;
     size_t length;
@@ -165,7 +184,7 @@ static int replace_vm_extension(const char *input_path, char *out, size_t out_si
     char *dot;
 
     if (!has_suffix(input_path, ".vm")) {
-        vm_errorf("ERR_CLI_3", "input file ending with .vm", "'%s'", input_path);
+        vm_errorf("ERR_CLI_3", "input file ending with .vm", "'%s'", input_path); ///bruh
         return -1;
     }
 
@@ -337,6 +356,8 @@ static int count_words(const char *line) {
 }
 
 static int expected_word_count(CommandType type) {
+
+    /// overkill but its a way to in future intellligization of the translsatr
     switch (type) {
         case C_EMPTY:
             return 0;
@@ -379,6 +400,46 @@ static int validate_command_shape(const char *input_path, int line_number, const
                   vm_line->cmd,
                   expected,
                   actual);
+        return -1;
+    }
+
+    return 0;
+}
+
+static int validate_command_args(const char *input_path, int line_number, const VMLine *vm_line) {
+    if (vm_line == NULL) {
+        return -1;
+    }
+
+    if (vm_line->type == C_PUSH && strcmp(vm_line->arg1, "constant") == 0) {
+        if (vm_line->arg2 < -1) {
+            vm_errorf("ERR_TRN_10",
+                      "non-negative index/count, or push constant -1",
+                      "%s:%d '%s %s %d'",
+                      input_path,
+                      line_number,
+                      vm_line->cmd,
+                      vm_line->arg1,
+                      vm_line->arg2);
+            return -1;
+        }
+
+        return 0;
+    }
+
+    if ((vm_line->type == C_PUSH ||
+         vm_line->type == C_POP ||
+         vm_line->type == C_FUNCTION ||
+         vm_line->type == C_CALL) &&
+        vm_line->arg2 < 0) {
+        vm_errorf("ERR_TRN_10",
+                  "non-negative index/count, or push constant -1",
+                  "%s:%d '%s %s %d'",
+                  input_path,
+                  line_number,
+                  vm_line->cmd,
+                  vm_line->arg1,
+                  vm_line->arg2);
         return -1;
     }
 
@@ -458,6 +519,10 @@ static int translate_file(CodeWriter *writer, const char *input_path) {
 
         vm_line = make_vm_line(cmd, arg1, arg2);
         if (validate_command_shape(input_path, line_number, line, &vm_line) != 0) {
+            fclose(in);
+            return -1;
+        }
+        if (validate_command_args(input_path, line_number, &vm_line) != 0) {
             fclose(in);
             return -1;
         }
@@ -565,6 +630,7 @@ static int translate_folder(const char *input_path, const char *output_path) {
 }
 
 int main(int argc, char **argv) {
+    ///// here we go
     const char *input_path;
     char output_path[PATH_MAX];
     struct stat input_stat;

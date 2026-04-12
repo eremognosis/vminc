@@ -21,13 +21,14 @@ int main() {
         {"   ", "", "", 0}, // Blank line
         {"// just a comment", "", "", 0},
         {"goto END//no space", "goto", "END", 0},
-        {"if-goto","if-goto","",0}
+        {"if-goto","if-goto","",0},
+        {"push constant -1", "push", "constant", -1}
     };
 
     char cmd[50], arg1[50];
     int arg2;
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 8; i++) {
         char buffer[100];
         strcpy(buffer, tests[i].input);
 

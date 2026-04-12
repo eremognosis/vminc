@@ -453,7 +453,7 @@ int write_function(CodeWriter *writer, const char *name, int nlocals) {
     }
 
     for (i = 0; i < nlocals; i++) {
-        if (emit(writer, "@0\nD=A\n") != 0 || push_d(writer) != 0) {
+        if (push_literal(writer, "0") != 0) {
             return -1;
         }
     }

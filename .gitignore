@@ -4,3 +4,9 @@
 /vmtrans
 /test_parser
 /jackos.asm
+/logs
+/.vscode
+/.idea
+/*/*.o
+/tests/vmtranslator_tests
+
